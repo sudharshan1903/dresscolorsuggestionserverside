@@ -24,11 +24,11 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(fileUpload());
 
-
+// Serve static files
 app.use('/images', express.static(path.join(__dirname, 'images')));
 
-
 let client;
+
 async function createConnection() {
   try {
     client = new MongoClient(MONGO_URL);
@@ -36,13 +36,14 @@ async function createConnection() {
     console.log('MongoDB connected');
   } catch (error) {
     console.error(error, 'MongoDB connection error');
-    process.exit(1); 
+    process.exit(1);
   }
 }
 
-await createConnection();
 
+createConnection();
 
+// Routes
 app.get('/homeTheme', async (req, res) => {
   try {
     const homeThemes = await client.db('dress-color-suggestion').collection('homePages').find().toArray();
@@ -52,7 +53,6 @@ app.get('/homeTheme', async (req, res) => {
     res.send('Internal Server Error');
   }
 });
-
 
 app.get('/dressTheme', async (req, res) => {
   try {
@@ -68,8 +68,6 @@ app.get('/dressTheme', async (req, res) => {
     res.send('Internal Server Error');
   }
 });
-
-
 
 app.post('/Register', async (req, res) => {
   const { userName, email, password } = req.body;
@@ -99,15 +97,13 @@ app.post('/Register', async (req, res) => {
   }
 });
 
-
 app.post('/Login', async (req, res) => {
   const { email, password } = req.body;
 
   try {
     const user = await client.db('dress-color-suggestion').collection('users').findOne({ email });
-    
+
     if (!user) {
-      // If user doesn't exist
       res.json({ success: false, message: 'User not found.' });
       return;
     }
@@ -116,14 +112,11 @@ app.post('/Login', async (req, res) => {
 
     if (match) {
       if (user.isAdmin) {
-        // Admin login
         res.json({ success: true, isAdmin: true, message: 'Admin login successful.' });
       } else {
-        //  user login
         res.json({ success: true, isAdmin: false, message: 'User login successful.' });
       }
     } else {
-      // If password doesn't match
       res.json({ success: false, message: 'Invalid credentials.' });
     }
   } catch (error) {
@@ -131,8 +124,6 @@ app.post('/Login', async (req, res) => {
     res.json({ success: false, message: 'Internal Server Error' });
   }
 });
-
-
 
 app.post('/AdminLogin', async (req, res) => {
   const { email, password } = req.body;
@@ -158,7 +149,7 @@ app.post('/AdminLogin', async (req, res) => {
   }
 });
 
-// admin upload dress collections 
+// Admin upload dress collections
 app.post('/AdminUpload', async (req, res) => {
   try {
     if (!req.files || Object.keys(req.files).length === 0) {
@@ -166,6 +157,7 @@ app.post('/AdminUpload', async (req, res) => {
     }
 
     const { file } = req.files;
+    const relativePath = `/images/${file.name}`;
     const uploadPath = path.join(__dirname, 'images', file.name);
     await file.mv(uploadPath);
 
@@ -174,7 +166,7 @@ app.post('/AdminUpload', async (req, res) => {
       .collection('dressCollectionTheme')
       .insertOne({
         imageName: file.name,
-        dressImage: uploadPath,
+        dressImage: relativePath,
       });
 
     res.json({ success: true, message: 'File uploaded successfully.', fileId: result.insertedId });
