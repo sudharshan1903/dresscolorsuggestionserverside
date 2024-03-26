@@ -166,7 +166,7 @@ app.post('/AdminUpload', async (req, res) => {
       .collection('dressCollectionTheme')
       .insertOne({
         imageName: file.name,
-        dressImage: uploadPath,
+        dressImage: `https://dresscolorsuggestionserverside.onrender.com/images/${file.name}`,
       });
 
     res.json({ success: true, message: 'File uploaded successfully.', fileId: result.insertedId });
