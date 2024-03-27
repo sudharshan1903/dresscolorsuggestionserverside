@@ -80,7 +80,7 @@ app.post('/Register', async (req, res) => {
       return;
     }
 
-    const salt = await bcrypt.genSalt(10);
+  const salt = await bcrypt.genSalt(10);
     const hashPassword = await bcrypt.hash(password, salt);
 
     const result = await client.db('dress-color-suggestion').collection('users').insertOne({
@@ -151,13 +151,13 @@ app.post('/AdminLogin', async (req, res) => {
 
 // Admin upload dress collections
 app.post('/AdminUpload', async (req, res) => {
+  let host = req.headers.host
   try {
     if (!req.files || Object.keys(req.files).length === 0) {
       return res.status(400).send('No files were uploaded.');
     }
 
     const { file } = req.files;
-    const relativePath = `/images/${file.name}`;
     const uploadPath = path.join(__dirname, 'images', file.name);
     await file.mv(uploadPath);
 
@@ -166,7 +166,7 @@ app.post('/AdminUpload', async (req, res) => {
       .collection('dressCollectionTheme')
       .insertOne({
         imageName: file.name,
-        dressImage: `https://dresscolorsuggestionserverside.onrender.com/images/${file.name}`,
+        dressImage: `${host}/images/${file.name}`,
       });
 
     res.json({ success: true, message: 'File uploaded successfully.', fileId: result.insertedId });
