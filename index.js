@@ -166,7 +166,7 @@ app.post('/AdminUpload', async (req, res) => {
       .collection('dressCollectionTheme')
       .insertOne({
         imageName: file.name,
-        dressImage: `${host}/images/${file.name}`,
+        dressImage: `https://${host}/images/${file.name}`,
       });
 
     res.json({ success: true, message: 'File uploaded successfully.', fileId: result.insertedId });
